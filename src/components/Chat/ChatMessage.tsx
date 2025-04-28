@@ -1,4 +1,5 @@
 import { Loader2, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface MediaAttachment {
   type: 'image' | 'video';
@@ -61,7 +62,9 @@ export default function ChatMessage({ message }: ChatMessageProps) {
               <p className="text-sm">Generating response...</p>
             </div>
           ) : (
-            <p className="text-sm">{message.content}</p>
+            <div className="markdown-content text-sm">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
           )}
           <p className={`text-xs mt-1 ${isUser ? 'text-indigo-200' : 'text-gray-500'}`}>
             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

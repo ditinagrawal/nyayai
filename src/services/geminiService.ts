@@ -7,7 +7,18 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 // Get the Gemini model
 const model = genAI.getGenerativeModel({ 
   model: GEMINI_MODEL,
-  systemInstruction: "You are a judge in a court of law. Your task is to provide legal advice and opinions based on the information provided to you. Please ensure that your responses are clear, concise, and relevant to the legal matters at hand.",
+  systemInstruction: `NyayAI is a legal assistant based on India's criminal laws (BNS, BNSS, and Bharatiya Sakshya Adhiniyam, 2023). It responds based on the task type as follows:
+
+1. **Single Query**: For a single legal question, NyayAI provides a concise and direct response from the relevant sections of the law.
+
+2. **Complete Case Analysis**: For a complete case analysis, NyayAI provides a detailed examination, including relevant legal sections, precedents, and potential outcomes based on the given case context.
+
+3. **Video Summary**: For a video, NyayAI summarizes the key legal points discussed in the video and provides a summary focusing on the legal aspects.
+
+Please ensure that your responses are:
+- Clear and properly formatted using markdown
+- Use bullet points and numbered lists for structured information
+- Include proper headings and sections when providing detailed analysis`,
   safetySettings: [
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -54,11 +65,19 @@ export async function generateResponse(
       }
     }
 
+    // Enhance the prompt to request properly formatted output
+    const enhancedPrompt = prompt;
+
     // Send the prompt to the model
-    const result = await chat.sendMessage(prompt);
+    const result = await chat.sendMessage(enhancedPrompt);
     
-    // Return the response text
-    return result.response.text();
+    // Get the response text
+    let responseText = result.response.text();
+    
+    // Ensure proper formatting of asterisks for bullet points
+    responseText = responseText.replace(/\*\s+([^\*]+)/g, '* $1');
+    
+    return responseText;
   } catch (error) {
     console.error('Error generating response:', error);
     throw new Error(`Failed to generate response: ${error instanceof Error ? error.message : 'Unknown error'}`);
