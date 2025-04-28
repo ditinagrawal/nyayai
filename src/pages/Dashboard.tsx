@@ -2,54 +2,114 @@ import { Menu, Search, Settings } from 'lucide-react';
 import { useState } from 'react';
 import ChatInput from '../components/Chat/ChatInput';
 import ChatMessage from '../components/Chat/ChatMessage';
+import { generateResponse } from '../services/geminiService';
+
+interface MediaAttachment {
+  type: 'image' | 'video';
+  url: string;
+}
 
 interface Message {
   id: string;
   content: string;
   sender: 'user' | 'assistant';
   timestamp: Date;
-  media?: { type: 'image' | 'video'; url: string; }[];
+  media?: MediaAttachment[];
+  isLoading?: boolean;
 }
 
 const initialMessages: Message[] = [
   {
     id: '1',
-    content: 'Hello! How can I help you today?',
+    content: 'Hello! How can I help you with legal document analysis today?',
     sender: 'assistant',
     timestamp: new Date(Date.now() - 1000 * 60 * 5)
-  },
-  {
-    id: '2',
-    content: 'I need help with setting up my team workspace.',
-    sender: 'user',
-    timestamp: new Date(Date.now() - 1000 * 60 * 4)
-  },
-  {
-    id: '3',
-    content: 'I\'ll guide you through the process. First, let\'s create a new workspace for your team.',
-    sender: 'assistant',
-    timestamp: new Date(Date.now() - 1000 * 60 * 3)
   }
 ];
 
 export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSendMessage = (content: string, files?: File[]) => {
-    const mediaAttachments = files?.map(file => ({
-      type: file.type.startsWith('image/') ? 'image' : 'video' as const,
-      url: URL.createObjectURL(file)
-    }));
+  // Map our messages to the format expected by the Gemini API
+  const getChatHistory = () => {
+    return messages
+      .filter(msg => !msg.isLoading)
+      .map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model' as 'user' | 'model',
+        content: msg.content
+      }));
+  };
 
-    const newMessage: Message = {
+  const handleSendMessage = async (content: string, files?: File[]) => {
+    if (isProcessing) return;
+    
+    const mediaAttachments: MediaAttachment[] = [];
+    
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        const fileType = file.type.startsWith('image/') ? 'image' as const : 'video' as const;
+        mediaAttachments.push({
+          type: fileType,
+          url: URL.createObjectURL(file)
+        });
+      });
+    }
+
+    // Add the user's message
+    const userMessage: Message = {
       id: Date.now().toString(),
       content,
       sender: 'user',
       timestamp: new Date(),
-      media: mediaAttachments
+      media: mediaAttachments.length > 0 ? mediaAttachments : undefined
     };
 
-    setMessages([...messages, newMessage]);
+    // Add a loading message for the AI response
+    const loadingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: '',
+      sender: 'assistant',
+      timestamp: new Date(),
+      isLoading: true
+    };
+
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
+    setIsProcessing(true);
+
+    try {
+      // Get chat history for context
+      const chatHistory = getChatHistory();
+      
+      // Send to Gemini API and get response
+      const response = await generateResponse(content, chatHistory);
+
+      // Update the loading message with the actual response
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === loadingMessage.id 
+            ? { ...msg, content: response, isLoading: false } 
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error('Error generating response:', error);
+      
+      // Update the loading message with an error
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === loadingMessage.id 
+            ? { 
+                ...msg, 
+                content: 'Sorry, I encountered an error processing your request. Please try again.', 
+                isLoading: false 
+              } 
+            : msg
+        )
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

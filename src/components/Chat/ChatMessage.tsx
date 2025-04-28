@@ -1,4 +1,4 @@
-import { User } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 
 interface MediaAttachment {
   type: 'image' | 'video';
@@ -12,6 +12,7 @@ interface ChatMessageProps {
     sender: 'user' | 'assistant';
     timestamp: Date;
     media?: MediaAttachment[];
+    isLoading?: boolean;
   };
 }
 
@@ -54,7 +55,14 @@ export default function ChatMessage({ message }: ChatMessageProps) {
               ))}
             </div>
           )}
-          <p className="text-sm">{message.content}</p>
+          {message.isLoading ? (
+            <div className="flex items-center space-x-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <p className="text-sm">Generating response...</p>
+            </div>
+          ) : (
+            <p className="text-sm">{message.content}</p>
+          )}
           <p className={`text-xs mt-1 ${isUser ? 'text-indigo-200' : 'text-gray-500'}`}>
             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </p>
