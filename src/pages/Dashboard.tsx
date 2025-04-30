@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import ChatInput from '../components/Chat/ChatInput';
 import ChatMessage from '../components/Chat/ChatMessage';
 import { generateResponse } from '../services/geminiService';
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { SignedIn, UserButton, useUser } from "@clerk/clerk-react";
 
 interface MediaAttachment {
   type: 'image' | 'video';
@@ -18,15 +18,6 @@ interface Message {
   media?: MediaAttachment[];
   isLoading?: boolean;
 }
-
-const initialMessages: Message[] = [
-  {
-    id: '1',
-    content: 'Hello! How can I help you with legal document analysis today?',
-    sender: 'assistant',
-    timestamp: new Date(Date.now() - 1000 * 60 * 5)
-  }
-];
 
 // Example suggested sections
 const suggestedSections = [
@@ -48,7 +39,8 @@ const recentQuestions = [
 ];
 
 export default function Dashboard() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { user, isLoaded } = useUser();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<'query' | 'video'>('query');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,6 +49,18 @@ export default function Dashboard() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize messages with welcome message when user is loaded
+  useEffect(() => {
+    if (isLoaded && user) {
+      setMessages([{
+        id: '1',
+        content: `Hello ${user.firstName || 'there'}! How can I help you with legal document analysis today?`,
+        sender: 'assistant',
+        timestamp: new Date()
+      }]);
+    }
+  }, [isLoaded, user]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -167,6 +171,15 @@ export default function Dashboard() {
     }
   };
 
+  // Loading state while fetching user data
+  if (!isLoaded) {
+    return (
+      <div className="h-screen flex items-center justify-center dark-theme bg-[var(--bg-primary)]">
+        <div className="animate-pulse">Loading user data...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col dark-theme bg-[var(--bg-primary)] text-[var(--text-primary)]">
       {/* Navbar */}
@@ -177,9 +190,9 @@ export default function Dashboard() {
             <h1 className="text-xl font-bold">NyayAI</h1>
           </div>
           <div>
-          <SignedIn>
-        <UserButton />
-      </SignedIn>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </div>
         </div>
       </div>

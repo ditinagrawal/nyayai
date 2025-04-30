@@ -1,7 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { Sparkles } from 'lucide-react';
 
-
 export default function Header() {
   return (
     <header className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100">
@@ -19,14 +18,16 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-          <header>
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
-      <SignedIn>
-        <UserButton />
-      </SignedIn>
-    </header>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors">
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </div>
         </div>
       </nav>
