@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import ChatInput from '../components/Chat/ChatInput';
 import ChatMessage from '../components/Chat/ChatMessage';
 import { generateResponse } from '../services/geminiService';
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 
 interface MediaAttachment {
   type: 'image' | 'video';
@@ -174,6 +175,11 @@ export default function Dashboard() {
           <div className="flex items-center">
             <Bot className="w-6 h-6 text-[var(--accent-color)] mr-2" />
             <h1 className="text-xl font-bold">NyayAI</h1>
+          </div>
+          <div>
+          <SignedIn>
+        <UserButton />
+      </SignedIn>
           </div>
         </div>
       </div>

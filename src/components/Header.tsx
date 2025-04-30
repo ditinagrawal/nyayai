@@ -1,5 +1,6 @@
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 export default function Header() {
   return (
@@ -18,12 +19,14 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard"
-              className="px-6 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors"
-            >
-              Get Started
-            </Link>
+          <header>
+      <SignedOut>
+        <SignInButton />
+      </SignedOut>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
+    </header>
           </div>
         </div>
       </nav>
