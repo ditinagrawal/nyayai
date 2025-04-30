@@ -79,12 +79,12 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
   };
 
   return (
-    <div className="border-t border-gray-200 bg-white shadow-md">
+    <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]">
       {mediaFiles.length > 0 && (
-        <div className="p-3 flex gap-3 overflow-x-auto bg-gray-50 border-b border-gray-100">
+        <div className="p-3 flex gap-3 overflow-x-auto bg-[var(--bg-tertiary)] border-b border-[var(--border-color)]">
           {mediaFiles.map((media, index) => (
             <div key={index} className="relative group animate-fade-in">
-              <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+              <div className="w-24 h-24 rounded-lg overflow-hidden bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
                 {media.type === 'image' ? (
                   <img
                     src={media.previewUrl}
@@ -93,7 +93,7 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <FileVideo className="w-10 h-10 text-gray-400" />
+                    <FileVideo className="w-10 h-10 text-[var(--text-secondary)]" />
                   </div>
                 )}
               </div>
@@ -121,32 +121,32 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors duration-200"
+            className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:bg-[var(--bg-tertiary)] rounded-full transition-colors duration-200"
             title="Attach files"
           >
             <Paperclip className="w-5 h-5" />
           </button>
-          <div className="flex-1 bg-gray-50 hover:bg-gray-100 focus-within:bg-white focus-within:border-indigo-300 rounded-2xl px-4 py-2 border border-gray-200 transition-all duration-200 shadow-sm">
+          <div className="flex-1 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] focus-within:border-[var(--accent-color)] rounded-2xl px-4 py-2 border border-[var(--border-color)] transition-all duration-200">
             <textarea
               ref={textareaRef}
               value={message}
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
               placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)"
-              className="w-full bg-transparent border-none focus:ring-0 resize-none max-h-32 min-h-[44px] text-gray-800 outline-none"
+              className="w-full bg-transparent border-none focus:ring-0 resize-none max-h-32 min-h-[44px] text-[var(--text-primary)] outline-none"
               rows={1}
             />
           </div>
           <button
             type="button"
-            className="p-2.5 text-gray-500 hover:text-amber-500 hover:bg-amber-50 rounded-full transition-colors duration-200"
+            className="p-2.5 text-[var(--text-secondary)] hover:text-amber-500 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors duration-200"
             title="Insert emoji"
           >
             <Smile className="w-5 h-5" />
           </button>
           <button
             type="submit"
-            className="p-3 text-white bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 shadow-md disabled:opacity-50 disabled:shadow-none transform hover:scale-105 active:scale-95"
+            className="p-3 text-white bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] rounded-full transition-all duration-200 shadow-md disabled:opacity-50 disabled:shadow-none transform hover:scale-105 active:scale-95"
             disabled={!message.trim() && mediaFiles.length === 0}
             title="Send message"
           >

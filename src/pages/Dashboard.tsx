@@ -1,5 +1,5 @@
-import { Menu, Search, Settings, PlusCircle, BarChart, MessagesSquare, BookOpen, X, MessageCircle, Bot } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Bot, FileVideo, PlayCircle, Search, Upload, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import ChatInput from '../components/Chat/ChatInput';
 import ChatMessage from '../components/Chat/ChatMessage';
 import { generateResponse } from '../services/geminiService';
@@ -27,10 +27,35 @@ const initialMessages: Message[] = [
   }
 ];
 
+// Example suggested sections
+const suggestedSections = [
+  'Bharatiya Nyaya Sanhita (BNS)',
+  'Bharatiya Nagarik Suraksha Sanhita (BNSS)',
+  'Bharatiya Sakshya Adhiniyam, 2023',
+  'Criminal Defamation',
+  'Cyber Crimes',
+  'Digital Evidence'
+];
+
+// Example recent questions
+const recentQuestions = [
+  'What are the penalties for defamation under BNS?',
+  'How is digital evidence handled under the new laws?',
+  'What changes were made to bail provisions?',
+  'Explain the procedure for filing an FIR under BNSS',
+  'What is the punishment for cyber terrorism?'
+];
+
 export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'query' | 'video'>('query');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [uploadedVideo, setUploadedVideo] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -118,116 +143,213 @@ export default function Dashboard() {
     }
   };
 
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('video/')) {
+      setUploadedVideo(file);
+      setVideoUrl(URL.createObjectURL(file));
+      setActiveTab('video');
+    }
+  };
+
+  const handleRecentQuestionClick = (question: string) => {
+    handleSendMessage(question);
+  };
+
+  const handleSuggestedSectionClick = (section: string) => {
+    handleSendMessage(`Tell me about ${section}`);
+  };
+
+  const handleAnalyzeVideo = () => {
+    if (videoUrl) {
+      handleSendMessage(`Analyze this video for legal implications. It contains footage relevant to legal matters.`);
+    }
+  };
+
   return (
-    <div className="h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-72 bg-white border-r border-gray-200 flex flex-col shadow-sm">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-800 flex items-center">
-              <Bot className="w-5 h-5 mr-2 text-indigo-600" />
-              NyayAI
-            </h1>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Menu className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search conversations..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
-            />
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-          </div>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-3">
-          <div className="flex justify-between items-center mb-3 px-2">
-            <h2 className="font-medium text-gray-700 text-sm">Recent Conversations</h2>
-            <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-              <PlusCircle className="w-5 h-5 text-indigo-600" />
-            </button>
-          </div>
-          
-          {/* Sample conversation list */}
-          <div className="space-y-1">
-            <div className="p-3 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center">
-                  <MessageCircle className="w-4 h-4 text-indigo-600 mr-2" />
-                  <span className="font-medium text-gray-800">Legal Document Analysis</span>
-                </div>
-                <span className="text-xs text-gray-500">Now</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1 truncate">Active conversation</p>
-            </div>
-            
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center">
-                    <MessageCircle className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="font-medium text-gray-700">Previous Case {i + 1}</span>
-                  </div>
-                  <span className="text-xs text-gray-500">{i + 1}d ago</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1 truncate">Last message preview...</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="p-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex justify-between mb-2">
-            <a href="#" className="text-sm text-gray-600 hover:text-indigo-600 flex items-center transition-colors">
-              <BarChart className="w-4 h-4 mr-1" /> Dashboard
-            </a>
-            <a href="#" className="text-sm text-gray-600 hover:text-indigo-600 flex items-center transition-colors">
-              <BookOpen className="w-4 h-4 mr-1" /> Documentation
-            </a>
+    <div className="h-screen flex flex-col dark-theme bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      {/* Navbar */}
+      <div className="border-b border-[var(--border-color)] p-4 bg-[var(--bg-secondary)]">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center">
+            <Bot className="w-6 h-6 text-[var(--accent-color)] mr-2" />
+            <h1 className="text-xl font-bold">NyayAI</h1>
           </div>
         </div>
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        <div className="border-b border-gray-200 p-4 bg-white shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800">Legal Document Analysis</h2>
-              <p className="text-sm text-gray-500">with NyayAI Assistant</p>
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden p-4">
+        <div className="max-w-7xl w-full mx-auto flex gap-4 h-full">
+          {/* Left Sidebar - Recent Questions */}
+          <div className="w-64 flex flex-col panel-border bg-[var(--bg-secondary)] overflow-hidden">
+            <div className="p-3 border-b border-[var(--border-color)]">
+              <h2 className="font-medium text-center">Recent Asked Questions</h2>
             </div>
-            <div className="flex items-center">
-              <button className="p-2 hover:bg-gray-100 rounded-lg mx-1 transition-colors">
-                <MessagesSquare className="w-5 h-5 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg mx-1 transition-colors">
-                <Settings className="w-5 h-5 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-red-100 rounded-lg mx-1 transition-colors">
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
+            <div className="flex-1 overflow-y-auto p-2">
+              <div className="space-y-2">
+                {recentQuestions.map((question, idx) => (
+                  <div 
+                    key={idx} 
+                    className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg cursor-pointer text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                    onClick={() => handleRecentQuestionClick(question)}
+                  >
+                    {question}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center py-4 mb-4">
-              <p className="text-sm text-gray-500 border-b border-gray-200 pb-3 mb-3">Today</p>
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for specific sections..."
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
+                />
+                <Search className="w-5 h-5 text-[var(--text-secondary)] absolute left-3 top-1/2 transform -translate-y-1/2" />
+              </div>
             </div>
-            
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
 
-        <div className="bg-gray-50 px-4">
-          <div className="max-w-3xl mx-auto">
-            <ChatInput onSendMessage={handleSendMessage} />
+            {/* Main Content Panel */}
+            <div className="flex-1 panel-border bg-[var(--bg-secondary)] overflow-hidden flex flex-col">
+              <div className="p-3 border-b border-[var(--border-color)] flex">
+                <div 
+                  onClick={() => setActiveTab('query')}
+                  className={`cursor-pointer px-3 py-1 rounded-lg mr-2 ${activeTab === 'query' ? 'bg-[var(--accent-color)]' : 'hover:bg-[var(--bg-tertiary)]'}`}
+                >
+                  Query Box
+                </div>
+                <div 
+                  onClick={() => videoUrl && setActiveTab('video')}
+                  className={`cursor-pointer px-3 py-1 rounded-lg ${activeTab === 'video' ? 'bg-[var(--accent-color)]' : videoUrl ? 'hover:bg-[var(--bg-tertiary)]' : 'opacity-50 cursor-not-allowed'}`}
+                >
+                  Video Analysis
+                </div>
+              </div>
+
+              {activeTab === 'query' ? (
+                /* Query Chat Area */
+                <div className="flex-1 overflow-y-auto p-4">
+                  {messages.map((message) => (
+                    <ChatMessage key={message.id} message={message} />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              ) : (
+                /* Video Analysis Area */
+                <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center">
+                  {videoUrl ? (
+                    <div className="w-full">
+                      <video 
+                        controls 
+                        className="max-h-96 rounded-lg mx-auto shadow-lg"
+                        src={videoUrl}
+                      />
+                      <div className="mt-4 text-center">
+                        <p className="mb-2">{uploadedVideo?.name}</p>
+                        <button 
+                          onClick={handleAnalyzeVideo}
+                          className="px-4 py-2 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] rounded-lg transition-colors inline-flex items-center"
+                        >
+                          <PlayCircle className="w-5 h-5 mr-2" />
+                          Analyze Video
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center text-[var(--text-secondary)]">
+                      <p>No video uploaded yet.</p>
+                      <p>Please upload a video from the right panel.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Input Area */}
+              {activeTab === 'query' && (
+                <div className="border-t border-[var(--border-color)]">
+                  <ChatInput onSendMessage={handleSendMessage} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="w-72 flex flex-col gap-4">
+            {/* Suggested Sections */}
+            <div className="panel-border bg-[var(--bg-secondary)] flex flex-col flex-1 overflow-hidden">
+              <div className="p-3 border-b border-[var(--border-color)]">
+                <h2 className="font-medium text-center">Suggested Sections</h2>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2">
+                <div className="space-y-2">
+                  {suggestedSections.map((section, idx) => (
+                    <div 
+                      key={idx} 
+                      className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg cursor-pointer text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                      onClick={() => handleSuggestedSectionClick(section)}
+                    >
+                      {section}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Video */}
+            <div className="panel-border bg-[var(--bg-secondary)] overflow-hidden flex-1">
+              <div className="p-3 border-b border-[var(--border-color)]">
+                <h2 className="font-medium text-center">
+                  {videoUrl ? 'Video Uploaded' : 'Upload Video'}
+                </h2>
+              </div>
+              <div className="p-4 flex flex-col items-center justify-center h-[calc(100%-43px)]">
+                {videoUrl ? (
+                  <div className="text-center">
+                    <FileVideo className="w-10 h-10 mx-auto mb-2 text-[var(--accent-color)]" />
+                    <p className="text-sm mb-1 truncate max-w-full">{uploadedVideo?.name}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {uploadedVideo?.size ? `${(uploadedVideo.size / (1024 * 1024)).toFixed(2)} MB` : ''}
+                    </p>
+                    <button 
+                      onClick={() => {
+                        setUploadedVideo(null);
+                        setVideoUrl(null);
+                        setActiveTab('query');
+                      }}
+                      className="mt-2 p-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4 mr-1" /> Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleVideoUpload}
+                      accept="video/*"
+                      className="hidden"
+                    />
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-32 h-32 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center cursor-pointer mx-auto hover:bg-[var(--border-color)] transition-colors"
+                    >
+                      <Upload className="w-12 h-12 text-[var(--accent-color)]" />
+                    </div>
+                    <p className="mt-3 text-sm">Click to upload a video</p>
+                    <p className="text-xs text-[var(--text-secondary)]">MP4, MOV, AVI up to 100MB</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -23,15 +23,15 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 transition-all`}>
       <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end gap-3 max-w-[85%]`}>
-        <div className={`w-9 h-9 rounded-full ${isUser ? 'bg-indigo-500' : 'bg-gray-700'} flex items-center justify-center flex-shrink-0 shadow-md`}>
+        <div className={`w-9 h-9 rounded-full ${isUser ? 'bg-[var(--accent-color)]' : 'bg-[var(--bg-tertiary)]'} flex items-center justify-center flex-shrink-0 shadow-md`}>
           <User className="w-5 h-5 text-white" />
         </div>
         <div
           className={`px-5 py-3 rounded-2xl shadow-sm ${
             isUser
-              ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-none'
-              : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
-          } transition-all duration-200 hover:shadow-md`}
+              ? 'bg-[var(--accent-color)] text-white rounded-br-none'
+              : 'bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-bl-none'
+          } transition-all duration-200`}
         >
           {message.media && message.media.length > 0 && (
             <div className="mb-3 space-y-2">
@@ -62,11 +62,11 @@ export default function ChatMessage({ message }: ChatMessageProps) {
               <p className="text-sm font-medium">Generating response...</p>
             </div>
           ) : (
-            <div className={`markdown-content text-sm ${isUser ? '' : 'text-gray-800'}`}>
+            <div className={`markdown-content text-sm ${isUser ? 'text-white' : 'text-[var(--text-primary)]'}`}>
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           )}
-          <p className={`text-xs mt-2 ${isUser ? 'text-indigo-200' : 'text-gray-400'}`}>
+          <p className={`text-xs mt-2 ${isUser ? 'text-indigo-200' : 'text-[var(--text-secondary)]'}`}>
             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
