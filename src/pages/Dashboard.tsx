@@ -203,20 +203,6 @@ export default function Dashboard() {
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Search Bar */}
-            <div className="mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for specific sections..."
-                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
-                />
-                <Search className="w-5 h-5 text-[var(--text-secondary)] absolute left-3 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div>
-
             {/* Main Content Panel */}
             <div className="flex-1 panel-border bg-[var(--bg-secondary)] overflow-hidden flex flex-col">
               <div className="p-3 border-b border-[var(--border-color)] flex">
